@@ -130,3 +130,7 @@ dmypy.json
 
 # streamlit
 .streamlit
+
+
+.DS_Store
+.idea/
