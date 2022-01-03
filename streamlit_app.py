@@ -110,6 +110,13 @@ def add_place(df, entry_criteria):
 	print(db_logging)
 	db_entry = db_logging + entry_criteria
 	sheet.append_rows(values=[db_entry])
+	
+def check_entry(database, name):
+	places = database['name'].tolist()
+	print(places)
+	if name not in places:
+		return True
+	return False
 		
 
 
@@ -174,6 +181,7 @@ with suggestion_expander:
 			results = suggested_search(df, meal_criteria, venue_criteria)
 			if results['status'] != 'No results':
 				st.success(search_output(results['payload']))
+				st.balloons()
 			else:
 				st.error('No entries with this criteria')
 	
@@ -222,8 +230,11 @@ with add_place_expander:
 
 
 	if submit_button:
-	    add_place(df, entry_criteria)
-	    st.success(f'{place_name} has been added!')
+		if check_entry(df, place_name):
+			add_place(df, entry_criteria)
+			st.success(f'{place_name} has been added!')
+		else:
+			st.error('This place has already been added!')
 
 
 
