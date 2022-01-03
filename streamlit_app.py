@@ -49,65 +49,52 @@ if suggestion_cta:
 	st.balloons()
 
 
-st.text('Add a place')
-with st.form(key='new_place_form', clear_on_submit=True):
-	place_name = st.text_input("Place name")
 
-	st.text('Meal type')
-	breakfast_option, brunch_option, lunch_option, dinner_option, roast_option, drinks_option = st.columns(6)
-	with breakfast_option:
-		breakfast = st.checkbox('Breakfast')
-	with brunch_option:
-		brunch = st.checkbox('Brunch')
-	with lunch_option:
-		lunch = st.checkbox('Lunch')
-	with dinner_option:
-		dinner = st.checkbox('Dinner')
-	with roast_option:
-		roast = st.checkbox('Roast')
-	with drinks_option:
-		drinks = st.checkbox('Drinks')
+my_expander = st.expander(label='Add a place')
+with my_expander:
+	with st.form(key='new_place_form', clear_on_submit=True):
+		place_name = st.text_input("Place name")
 
-	st.text('Venue type')
-	restaurant_option, cafe_option, bar_option, pub_option = st.columns(4)
-	with restaurant_option:
-		restaurant = st.checkbox('Restaurant')
-	with cafe_option:
-		cafe = st.checkbox('Cafe')
-	with bar_option:
-		bar = st.checkbox('Bar')
-	with pub_option:
-		pub = st.checkbox('Pub')
+		st.text('Meal type')
+		breakfast_option, brunch_option, lunch_option, dinner_option, roast_option, drinks_option = st.columns(6)
+		with breakfast_option:
+			breakfast = st.checkbox('Breakfast')
+		with brunch_option:
+			brunch = st.checkbox('Brunch')
+		with lunch_option:
+			lunch = st.checkbox('Lunch')
+		with dinner_option:
+			dinner = st.checkbox('Dinner')
+		with roast_option:
+			roast = st.checkbox('Roast')
+		with drinks_option:
+			drinks = st.checkbox('Drinks')
 
-	added_by = st.radio("Added by", ('Blair', 'Grace'))
+		st.text('Venue type')
+		restaurant_option, cafe_option, bar_option, pub_option = st.columns(4)
+		with restaurant_option:
+			restaurant = st.checkbox('Restaurant')
+		with cafe_option:
+			cafe = st.checkbox('Cafe')
+		with bar_option:
+			bar = st.checkbox('Bar')
+		with pub_option:
+			pub = st.checkbox('Pub')
 
-	anything_else = st.text_input("Anything else?")
+		added_by = st.radio("Added by", ('Blair', 'Grace'))
 
-	submit_button = st.form_submit_button(label='Submit')
+		anything_else = st.text_input("Anything else?")
 
-entry_criteria = [place_name, breakfast, brunch, lunch,
-				  dinner, roast, drinks, restaurant,
-				  cafe, bar, pub, added_by, anything_else]
+		submit_button = st.form_submit_button(label='Submit')
 
-
-if submit_button:
-    add_place(df, entry_criteria)
-    st.success(f'{place_name} has been added!')
+	entry_criteria = [place_name, breakfast, brunch, lunch,
+					  dinner, roast, drinks, restaurant,
+					  cafe, bar, pub, added_by, anything_else]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+	if submit_button:
+	    add_place(df, entry_criteria)
+	    st.success(f'{place_name} has been added!')
 
 
 
