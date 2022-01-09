@@ -89,12 +89,12 @@ with suggestion_expander:
 		st.balloons()
 	
 	with st.form(key="suggestion_requirements_form", clear_on_submit=True):
-		meal_type = st.radio("Meal type", ('Breakfast', 'Brunch', 'Lunch',
-										   'Dinner', 'Roast', 'Drinks', 'Don\'t mind'))
+		meal_type = st.radio("Meal type", ('Don\'t mind','Breakfast', 'Brunch', 'Lunch',
+										   'Dinner', 'Roast', 'Drinks'))
 
 		st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
-		venue_type = st.radio("Venue type", ('Restaurant', 'Cafe', 'Bar', 'Pub', 'Don\'t mind'))
+		venue_type = st.radio("Venue type", ('Don\'t mind', 'Restaurant', 'Cafe', 'Bar'))
 		st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 		suggestion_submit_button = st.form_submit_button(label='Submit')
