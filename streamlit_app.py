@@ -2,8 +2,10 @@ import json
 import streamlit as st
 from google.oauth2 import service_account
 import gspread
+import pandasql as ps
 import pandas as pd
 from datetime import datetime
+import uuid
 
 
 key_dict = json.loads(st.secrets["textkey"])
@@ -19,95 +21,47 @@ records_data = sheet.get_all_records()
 df = pd.DataFrame.from_dict(records_data)
 booleanDictionary = {"TRUE": True, "FALSE": False}
 df = df.replace(booleanDictionary)
+pysqldf = lambda q: ps.sqldf(q, globals())
 
 
+def format_result(result):
+    if len(result):
+        return result[0]
+    return 'No entries with this criteria'
 
-def random_search(database, criteria=False):
-	if not criteria:
- 		return database.sample()
-
-
+def random_search(database):
+    query = """SELECT * FROM df ORDER BY RANDOM()"""
+    return format_result(pysqldf(query)['name'].values)
 
 def suggested_search(database, meal_criteria, venue_criteria):
 
-	results = {'status': None,
-			  'payload': None}
+    if meal_criteria=='Don\'t mind' and venue_criteria=='Don\'t mind':
+        return random_search(database)
+
+    if meal_criteria=='Don\'t mind' and venue_criteria!='Don\'t mind':
+        venue_criteria_filter = f'venue_type_{venue_criteria}'.lower()
+        query = f"""SELECT * FROM df WHERE {venue_criteria_filter}=True ORDER BY RANDOM() LIMIT 1"""
+        return format_result(pysqldf(query)['name'].values)
+    
+    if venue_criteria=='Don\'t mind' and meal_criteria!='Don\'t mind':
+        meal_criteria_filter = f'meal_type_{meal_criteria}'.lower()
+        query = f"""SELECT * FROM df WHERE {meal_criteria_filter}=True ORDER BY  RANDOM() LIMIT 1"""
+        return format_result(pysqldf(query)['name'].values)
+    
+    else:
+        meal_criteria_filter = f'meal_type_{meal_criteria}'.lower()
+        venue_criteria_filter = f'venue_type_{venue_criteria}'.lower()
+        query = f"""SELECT * FROM df WHERE {meal_criteria_filter}=True AND
+        {venue_criteria_filter}=True ORDER BY  RANDOM() LIMIT 1"""
+        return format_result(pysqldf(query)['name'].values)
 
 
-	if True not in meal_criteria.values() and True not in venue_criteria.values():
-		results['status'] = 'Random search applied'
-		results['payload'] = random_search(database)
-		return results
-
-
-	if True not in meal_criteria.values():
-		database_query = database[
-							  (database['venue_type_restaurant']==venue_criteria['restaurant']) &
-							  (database['venue_type_cafe']==venue_criteria['cafe']) &
-							  (database['venue_type_bar']==venue_criteria['bar']) &
-							  (database['venue_type_pub']==venue_criteria['pub'])]
-
-		if len(database_query)==0:
-			results['status'] = 'No results'
-			return results
-		else:
-			results['status'] = 'search applied over venue'
-			results['payload'] = random_search(database_query)
-			return results
-
-
-
-	if True not in venue_criteria.values():
-		database_query = database[(database['meal_type_breakfast']==meal_criteria['breakfast']) &
-							  (database['meal_type_brunch']==meal_criteria['brunch']) &
-							  (database['meal_type_lunch']==meal_criteria['lunch']) &
-							  (database['meal_type_dinner']==meal_criteria['dinner']) &
-							  (database['meal_type_roast']==meal_criteria['roast']) &
-							  (database['meal_type_drinks']==meal_criteria['drinks'])]
-		print(database_query)
-		if len(database_query)==0:
-			results['status'] = 'No results'
-			return results
-		else:
-			results['status'] = 'search applied over meal'
-			results['payload'] = random_search(database_query)
-			return results
-
-
-	database_query = database[(database['meal_type_breakfast']==meal_criteria['breakfast']) &
-							  (database['meal_type_brunch']==meal_criteria['brunch']) &
-							  (database['meal_type_lunch']==meal_criteria['lunch']) &
-							  (database['meal_type_dinner']==meal_criteria['dinner']) &
-							  (database['meal_type_roast']==meal_criteria['roast']) &
-							  (database['meal_type_drinks']==meal_criteria['drinks']) &
-							  (database['venue_type_restaurant']==venue_criteria['restaurant']) &
-							  (database['venue_type_cafe']==venue_criteria['cafe']) &
-							  (database['venue_type_bar']==venue_criteria['bar']) &
-							  (database['venue_type_pub']==venue_criteria['pub'])]
-
-
-	
-
-	if len(database_query)==0:
-		results['status'] = 'No results'
-		return results
-	results['status'] = 'Search applied over database'
-	results['payload'] = random_search(database_query)
-	return results
-
-	
-
-
-def search_output(search_result, criteria=False):
- 	if not criteria:
- 		return search_result.iloc[0]['name']
 
 def add_place(df, entry_criteria):
 	now = datetime.now()
 	current_time = now.strftime("%d/%m/%Y %H:%M:%S")
-	uid_generator = df['uid'].max()+1
-	db_logging = [int(uid_generator), current_time]
-	print(db_logging)
+	uid = str(uuid.uuid4())
+	db_logging = [uid, current_time]
 	db_entry = db_logging + entry_criteria
 	sheet.append_rows(values=[db_entry])
 	
@@ -124,66 +78,35 @@ def check_entry(database, name):
 st.title("Hello FIRE PUG user")
 
 
-
-
 suggestion_expander = st.expander(label='Get suggestion')
 with suggestion_expander:
 	random_suggestion_cta = st.button('Get random suggestion')
 
 	if random_suggestion_cta:
-		suggested_output = search_output(random_search(df))
+		suggested_output = random_search(df)
 		st.success(f'let\'s go to {suggested_output}!')
 		st.write(suggested_output)
 		st.balloons()
 	
 	with st.form(key="suggestion_requirements_form", clear_on_submit=True):
-		st.text('Meal type')
-		breakfast_option, brunch_option, lunch_option, dinner_option, roast_option, drinks_option = st.columns(6)
-		with breakfast_option:
-			breakfast = st.checkbox('Breakfast')
-		with brunch_option:
-			brunch = st.checkbox('Brunch')
-		with lunch_option:
-			lunch = st.checkbox('Lunch')
-		with dinner_option:
-			dinner = st.checkbox('Dinner')
-		with roast_option:
-			roast = st.checkbox('Roast')
-		with drinks_option:
-			drinks = st.checkbox('Drinks')
+		meal_type = st.radio("Meal type", ('Breakfast', 'Brunch', 'Lunch',
+										   'Dinner', 'Roast', 'Drinks', 'Don\'t mind'))
 
-		st.text('Venue type')
-		restaurant_option, cafe_option, bar_option, pub_option = st.columns(4)
-		with restaurant_option:
-			restaurant = st.checkbox('Restaurant')
-		with cafe_option:
-			cafe = st.checkbox('Cafe')
-		with bar_option:
-			bar = st.checkbox('Bar')
-		with pub_option:
-			pub = st.checkbox('Pub')
+		st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+
+		venue_type = st.radio("Venue type", ('Restaurant', 'Cafe', 'Bar', 'Pub', 'Don\'t mind'))
+		st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 		suggestion_submit_button = st.form_submit_button(label='Submit')
-		meal_criteria = {'breakfast': breakfast,
-						 'brunch' : brunch,
-						 'lunch' : lunch,
-						 'dinner' : dinner,
-						 'roast' : roast,
-						 'drinks': drinks}
-
-		venue_criteria = {'restaurant':restaurant,
-						  'cafe':cafe,
-						  'bar': bar,
-						  'pub': pub}
-
-
 		if suggestion_submit_button:
-			results = suggested_search(df, meal_criteria, venue_criteria)
-			if results['status'] != 'No results':
-				st.success(search_output(results['payload']))
+			print(meal_type)
+			print(venue_type)
+			suggested_result = suggested_search(df, meal_type, venue_type)
+			if suggested_result != 'No entries with this criteria':
+				st.success(f'let\'s go to {suggested_result}!')
 				st.balloons()
 			else:
-				st.error('No entries with this criteria')
+				st.error(suggested_result)
 	
 
 
