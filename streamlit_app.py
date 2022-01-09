@@ -67,7 +67,6 @@ def add_place(df, entry_criteria):
 	
 def check_entry(database, name):
 	places = database['name'].tolist()
-	print(places)
 	if name not in places:
 		return True
 	return False
@@ -81,11 +80,9 @@ st.title("Hello FIRE PUG user")
 suggestion_expander = st.expander(label='Get suggestion')
 with suggestion_expander:
 	random_suggestion_cta = st.button('Get random suggestion')
-
 	if random_suggestion_cta:
 		suggested_output = random_search(df)
 		st.success(f'let\'s go to {suggested_output}!')
-		st.write(suggested_output)
 		st.balloons()
 	
 	with st.form(key="suggestion_requirements_form", clear_on_submit=True):
@@ -98,15 +95,13 @@ with suggestion_expander:
 		st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 		suggestion_submit_button = st.form_submit_button(label='Submit')
-		if suggestion_submit_button:
-			print(meal_type)
-			print(venue_type)
-			suggested_result = suggested_search(df, meal_type, venue_type)
-			if suggested_result != 'No entries with this criteria':
-				st.success(f'let\'s go to {suggested_result}!')
-				st.balloons()
-			else:
-				st.error(suggested_result)
+	if suggestion_submit_button:
+		suggested_result = suggested_search(df, meal_type, venue_type)
+		if suggested_result != 'No entries with this criteria':
+			st.success(f'let\'s go to {suggested_result}!')
+			st.balloons()
+		else:
+			st.error(suggested_result)
 	
 
 
