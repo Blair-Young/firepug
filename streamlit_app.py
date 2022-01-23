@@ -24,7 +24,7 @@ with suggestion_expander:
 
 		st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
-		venue_type = st.radio("Venue type", ('Don\'t mind', 'Restaurant', 'Cafe', 'Bar'))
+		venue_type = st.radio("Venue type", ('Don\'t mind', 'Restaurant', 'Cafe', 'Bar', 'pub'))
 		st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 		suggestion_submit_button = st.form_submit_button(label='Submit')
