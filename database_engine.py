@@ -1,9 +1,5 @@
 import psycopg2
-import json
 import streamlit as st
-from google.oauth2 import service_account
-import gspread
-import pandasql as ps
 import pandas as pd
 from datetime import datetime
 import uuid
@@ -11,10 +7,10 @@ import uuid
 
 class Database():
 	def __init__(self):
-		self.connection = psycopg2.connect(host= st.secrets["host"],
-										database=st.secrets["database"],
-										user=st.secrets["user"],
-										password=st.secrets["password"])
+		self.connection = psycopg2.connect(host= st.secrets['host'],
+										database=st.secrets['database'],
+										user=st.secrets['user'],
+										password=st.secrets['password'])
 
 	def search(self, query):
 		cur = self.connection.cursor()
@@ -107,4 +103,4 @@ class Location():
 		self.venue_type_pub= attributes[12]
 		self.added_by= attributes[13]
 		self.anything_else= attributes[14]
-		
+
