@@ -12,6 +12,7 @@ class Database():
 										user=st.secrets['user'],
 										password=st.secrets['password'])
 
+
 	def search(self, query):
 		cur = self.connection.cursor()
 		cur.execute(query)
